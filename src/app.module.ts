@@ -2,17 +2,12 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { IpfsModule } from './ipfs/ipfs.module';
-import { Ipfs } from './ipfs/entities/ipfs.entity';
+import { dataSourceOptions } from 'db/data-source';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      url: process.env.POSTGRES_URI,
-      entities: [Ipfs],
-      synchronize: false,
-    }),
+    TypeOrmModule.forRoot(dataSourceOptions),
     IpfsModule,
   ],
   controllers: [],

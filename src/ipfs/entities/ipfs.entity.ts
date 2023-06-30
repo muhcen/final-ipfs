@@ -1,4 +1,10 @@
-import { Entity, Column, AfterInsert, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  AfterInsert,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+} from 'typeorm';
 
 @Entity({ name: 'ipfs' })
 export class Ipfs {
@@ -29,10 +35,6 @@ export class Ipfs {
   @Column({ nullable: true })
   userId: string;
 
+  @CreateDateColumn()
   uploadTime: Date;
-
-  @AfterInsert()
-  resetCounters() {
-    this.uploadTime = new Date();
-  }
 }

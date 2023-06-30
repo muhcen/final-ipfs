@@ -1,7 +1,8 @@
 # compiled output
 /dist
 /node_modules
-/ipfs
+/ipfs/*
+/db/data/*
 
 # Logs
 logs

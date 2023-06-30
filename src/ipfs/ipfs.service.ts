@@ -13,7 +13,9 @@ export class IpfsService {
   private fs;
 
   constructor(@InjectRepository(Ipfs) private ipfsRepo: Repository<Ipfs>) {
-    this.connectIpfs();
+    this.connectIpfs().then(() => {
+      console.log('ipfs is ready');
+    });
   }
 
   private async connectIpfs() {
