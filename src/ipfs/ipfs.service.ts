@@ -7,47 +7,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Ipfs } from './entities/ipfs.entity';
 import { CreateIpfDto } from './dto/create-ipfs.dto';
+import { HeliaService } from './helia.service';
 
 @Injectable()
 export class IpfsService {
-  private fs;
-
-  constructor(@InjectRepository(Ipfs) private ipfsRepo: Repository<Ipfs>) {
-    this.connectIpfs().then(() => {
-      console.log('ipfs is ready');
-    });
-  }
-
-  private async connectIpfs() {
-    try {
-      const { unixfs } = await import('@helia/unixfs');
-      const { FsBlockstore } = await import('blockstore-fs');
-      const { FsDatastore } = await import('datastore-fs');
-      const { createHelia } = await import('helia');
-
-      const blockstore = new FsBlockstore(process.env.IPFS_PATH);
-      const datastore = new FsDatastore(process.env.IPFS_PATH);
-
-      const heliaNode = await createHelia({
-        datastore,
-        blockstore,
-      });
-
-      this.fs = unixfs(heliaNode);
-    } catch (error) {
-      console.log(error);
-    }
-  }
+  constructor(
+    @InjectRepository(Ipfs) private ipfsRepo: Repository<Ipfs>,
+    private readonly heliaService: HeliaService,
+  ) {}
 
   public async uploadFile(file, createIpfDto: CreateIpfDto): Promise<Ipfs> {
     try {
-      const encoder = new TextEncoder();
       let finalFile = { ...file, ...createIpfDto };
-
-      const cid = await this.fs.addBytes(
-        encoder.encode(JSON.stringify(finalFile)),
-      );
-
+      const cid = await this.heliaService.uploadFile(finalFile);
       finalFile.cid = cid;
       const fileInfo = await this.createIpfs(finalFile);
       return fileInfo;
@@ -72,13 +44,8 @@ export class IpfsService {
       if (!(await this.fileExist(cid)))
         throw new NotFoundException('file not exist with this cid');
 
-      const decoder = new TextDecoder();
-      let text = '';
-      for await (const chunk of this.fs.cat(cid)) {
-        text += decoder.decode(chunk, {
-          stream: true,
-        });
-      }
+      const text = await this.heliaService.downloadFile(cid);
+
       const file = JSON.parse(text);
       file.buffer.data = Buffer.from(file.buffer.data);
       return file;
