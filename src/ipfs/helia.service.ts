@@ -1,25 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { createHeliaClient } from './helia/helia-client';
 
-async function createHeliaClient() {
-  try {
-    const { unixfs } = await import('@helia/unixfs');
-    const { FsBlockstore } = await import('blockstore-fs');
-    const { FsDatastore } = await import('datastore-fs');
-    const { createHelia } = await import('helia');
-
-    const blockstore = new FsBlockstore(process.env.IPFS_PATH);
-    const datastore = new FsDatastore(process.env.IPFS_PATH);
-
-    const heliaNode = await createHelia({
-      datastore,
-      blockstore,
-    });
-
-    return unixfs(heliaNode);
-  } catch (error) {
-    console.log(error);
-  }
-}
 @Injectable()
 export class HeliaService {
   private heliaClient;
@@ -40,7 +21,7 @@ export class HeliaService {
       await this.connectToIpfs();
       const encoder = new TextEncoder();
 
-      const cid = await this.heliaClient.addBytes(
+      const { cid } = await this.heliaClient.add(
         encoder.encode(JSON.stringify(finalFile)),
       );
 
@@ -64,6 +45,16 @@ export class HeliaService {
       return text;
     } catch (error) {
       return error;
+    }
+  }
+
+  async deleteFile(id: string) {
+    try {
+      const file = await this.heliaClient.pin.rm(id);
+      console.log(file);
+      return file;
+    } catch (error) {
+      console.log(error);
     }
   }
 }

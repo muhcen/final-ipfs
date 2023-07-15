@@ -1,11 +1,16 @@
 version: '3'
 services:
-  mongodb:
-    image: mongo:5.0.12
-    container_name: mongodb
+  ipfs_host:
+    image: ipfs/kubo:latest
+    container_name: ipfs_host
     ports:
-      - '27017:27017'
-    restart: always
+      - 4001:4001
+      - 4001:4001/udp
+      - 127.0.0.1:8080:8080
+      - 127.0.0.1:5001:5001
+    volumes:
+      - ./ipfs/staging/:/export
+      - ./ipfs/data/:/data/ipfs
 
   postgres:
     image: postgres

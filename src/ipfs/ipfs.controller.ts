@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseFilePipe,
@@ -45,6 +46,16 @@ export class IpfsController {
         )
         .setHeader('Content-Type', file.mimetype)
         .send(file.buffer.data);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Delete(':id')
+  async deleteFile(@Param('id') id: string) {
+    try {
+      const file = await this.ipfsService.deleteFile(id);
+      return file;
     } catch (error) {
       throw error;
     }

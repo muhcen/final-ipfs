@@ -61,4 +61,12 @@ export class IpfsService {
       throw new BadRequestException(error.message);
     }
   }
+
+  async deleteFile(id: string) {
+    try {
+      return await this.heliaService.deleteFile(id);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
 }
