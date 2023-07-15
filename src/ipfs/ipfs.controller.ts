@@ -16,6 +16,7 @@ import { Response } from 'express';
 import { Ipfs } from './entities/ipfs.entity';
 import { CreateIpfDto } from './dto/create-ipfs.dto';
 import { IpfsService } from './ipfs.service';
+import { IResponse } from './interface/response.interface';
 
 @Controller('ipfs')
 export class IpfsController {
@@ -28,36 +29,23 @@ export class IpfsController {
     file: Express.Multer.File,
     @Body() createIpfs: CreateIpfDto,
   ): Promise<Ipfs> {
-    try {
-      return await this.ipfsService.uploadFile(file, createIpfs);
-    } catch (error) {
-      throw error;
-    }
+    return await this.ipfsService.uploadFile(file, createIpfs);
   }
 
   @Get('download/:id')
   async downloadFile(@Res() response: Response, @Param('id') id: string) {
-    try {
-      const file = await this.ipfsService.downloadFile(id);
-      return response
-        .setHeader(
-          'Content-Disposition',
-          'attachment; filename=' + file.originalname,
-        )
-        .setHeader('Content-Type', file.mimetype)
-        .send(file.buffer.data);
-    } catch (error) {
-      throw error;
-    }
+    const file = await this.ipfsService.downloadFile(id);
+    return response
+      .setHeader(
+        'Content-Disposition',
+        'attachment; filename=' + file.originalname,
+      )
+      .setHeader('Content-Type', file.mimetype)
+      .send(file.buffer.data);
   }
 
-  @Delete(':id')
-  async deleteFile(@Param('id') id: string) {
-    try {
-      const file = await this.ipfsService.deleteFile(id);
-      return file;
-    } catch (error) {
-      throw error;
-    }
+  @Delete(':cid')
+  async deleteFile(@Param('cid') cid: string): Promise<IResponse> {
+    return this.ipfsService.deleteFile(cid);
   }
 }

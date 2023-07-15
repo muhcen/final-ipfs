@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { createIPFSClient } from './ipfs/ipfs-client';
 
 @Injectable()
-export class HeliaService {
-  private ipfsClient;
+export class ClientService {
+  ipfsClient;
 
   constructor() {
     this.connectToIpfs().then(() => {
@@ -31,7 +31,7 @@ export class HeliaService {
     }
   }
 
-  async downloadFile(cid) {
+  async downloadFile(cid): Promise<string> {
     try {
       await this.connectToIpfs();
       const decoder = new TextDecoder();
@@ -48,13 +48,13 @@ export class HeliaService {
     }
   }
 
-  async deleteFile(id: string) {
+  async deleteFile(cid: string): Promise<void> {
     try {
-      const { cid } = await this.ipfsClient.pin.rm(id);
+      await this.connectToIpfs();
+      await this.ipfsClient.pin.rm(cid);
       for await (const res of this.ipfsClient.repo.gc()) {
         console.log(res);
       }
-      return cid;
     } catch (error) {
       console.log(error);
     }

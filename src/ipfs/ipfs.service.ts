@@ -8,19 +8,20 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Ipfs } from './entities/ipfs.entity';
 import { CreateIpfDto } from './dto/create-ipfs.dto';
-import { HeliaService } from './helia.service';
+import { IResponse } from './interface/response.interface';
+import { ClientService } from './client.service';
 
 @Injectable()
 export class IpfsService {
   constructor(
     @InjectRepository(Ipfs) private ipfsRepo: Repository<Ipfs>,
-    private readonly heliaService: HeliaService,
+    private readonly clientService: ClientService,
   ) {}
 
   public async uploadFile(file, createIpfDto: CreateIpfDto): Promise<Ipfs> {
     try {
       let finalFile = { ...file, ...createIpfDto };
-      const path = await this.heliaService.uploadFile(finalFile);
+      const path = await this.clientService.uploadFile(finalFile);
       finalFile.cid = path;
       const fileInfo = await this.createIpfs(finalFile);
       return fileInfo;
@@ -42,7 +43,7 @@ export class IpfsService {
       if (!(await this.fileExist(cid)))
         throw new NotFoundException('file not exist with this cid');
 
-      const text = await this.heliaService.downloadFile(cid);
+      const text = await this.clientService.downloadFile(cid);
 
       const file = JSON.parse(text);
       file.buffer.data = Buffer.from(file.buffer.data);
@@ -54,20 +55,24 @@ export class IpfsService {
 
   async fileExist(cid): Promise<Ipfs> {
     try {
-      return await this.ipfsRepo.findOne({ where: { cid } });
+      return this.ipfsRepo.findOne({ where: { cid } });
     } catch (error) {
       throw new BadRequestException(error.message);
     }
   }
 
-  async deleteFile(id: string) {
+  async deleteFile(cid: string): Promise<IResponse> {
     try {
-      if (!(await this.fileExist(id)))
+      if (!(await this.fileExist(cid)))
         throw new NotFoundException('file not exist with this cid');
 
-      const file = await this.ipfsRepo.delete({ cid: id });
+      await this.ipfsRepo.delete({ cid });
 
-      return file;
+      await this.clientService.deleteFile(cid);
+
+      return {
+        message: 'file removed successfully.',
+      };
     } catch (error) {
       console.log(error.message);
       throw new HttpException(error.message, error.status);

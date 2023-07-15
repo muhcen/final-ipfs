@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Ipfs } from './entities/ipfs.entity';
 import { IpfsController } from './ipfs.controller';
 import { IpfsService } from './ipfs.service';
-import { HeliaService } from './helia.service';
+import { ClientService } from './client.service';
 import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
@@ -12,6 +12,6 @@ import { MulterModule } from '@nestjs/platform-express';
     MulterModule.register({ limits: { fileSize: 100 * 1024 * 1024 } }),
   ],
   controllers: [IpfsController],
-  providers: [IpfsService, HeliaService],
+  providers: [IpfsService, ClientService],
 })
 export class IpfsModule {}

@@ -4,7 +4,8 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Ipfs } from './entities/ipfs.entity';
 import { FindOneOptions } from 'typeorm';
 import { CreateIpfDto } from './dto/create-ipfs.dto';
-import { HeliaService } from './helia.service';
+import { ClientService } from './client.service';
+import { resolve } from 'path';
 
 describe('IpfsService', () => {
   let ipfsService: IpfsService;
@@ -54,26 +55,30 @@ describe('IpfsService', () => {
     findOne: jest
       .fn()
       .mockImplementation((query: FindOneOptions) => Promise.resolve(ipfsDto)),
+
+    delete: jest.fn().mockImplementation((query) => Promise.resolve()),
   };
 
   const cid = '123456789';
-  const mockHeliaService = {
+  const mockClientService = {
     uploadFile: jest.fn((file) => {
       return cid;
     }),
 
     downloadFile: jest.fn((cid) => JSON.stringify(MockFile)),
+
+    deleteFile: jest.fn((cid) => Promise.resolve()),
   };
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         IpfsService,
-        HeliaService,
+        ClientService,
         { provide: getRepositoryToken(Ipfs), useValue: mockIpfsRepository },
       ],
     })
-      .overrideProvider(HeliaService)
-      .useValue(mockHeliaService)
+      .overrideProvider(ClientService)
+      .useValue(mockClientService)
       .compile();
 
     ipfsService = module.get<IpfsService>(IpfsService);
@@ -102,6 +107,12 @@ describe('IpfsService', () => {
   it('should download file from ipfs', async () => {
     expect(await ipfsService.downloadFile(cid)).toEqual(
       expect.objectContaining({ fieldname: 'example' }),
+    );
+  });
+
+  it('should remove file from ipfs', async () => {
+    expect(await ipfsService.deleteFile(cid)).toEqual(
+      expect.objectContaining({ message: 'file removed successfully.' }),
     );
   });
 });
