@@ -1,4 +1,4 @@
-export async function createHeliaClient() {
+export async function createIPFSClient() {
   try {
     const { create } = await import('ipfs-http-client');
     const client = create({

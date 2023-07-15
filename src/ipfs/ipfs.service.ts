@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -19,8 +20,8 @@ export class IpfsService {
   public async uploadFile(file, createIpfDto: CreateIpfDto): Promise<Ipfs> {
     try {
       let finalFile = { ...file, ...createIpfDto };
-      const cid = await this.heliaService.uploadFile(finalFile);
-      finalFile.cid = cid;
+      const path = await this.heliaService.uploadFile(finalFile);
+      finalFile.cid = path;
       const fileInfo = await this.createIpfs(finalFile);
       return fileInfo;
     } catch (err) {
@@ -36,11 +37,8 @@ export class IpfsService {
     }
   }
 
-  public async downloadFile(id: string) {
+  public async downloadFile(cid: string) {
     try {
-      const { CID } = await import('multiformats/cid');
-      const cid = CID.parse(id);
-
       if (!(await this.fileExist(cid)))
         throw new NotFoundException('file not exist with this cid');
 
@@ -64,9 +62,15 @@ export class IpfsService {
 
   async deleteFile(id: string) {
     try {
-      return await this.heliaService.deleteFile(id);
+      if (!(await this.fileExist(id)))
+        throw new NotFoundException('file not exist with this cid');
+
+      const file = await this.ipfsRepo.delete({ cid: id });
+
+      return file;
     } catch (error) {
-      throw new BadRequestException(error.message);
+      console.log(error.message);
+      throw new HttpException(error.message, error.status);
     }
   }
 }

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { createHeliaClient } from './helia/helia-client';
+import { createIPFSClient } from './ipfs/ipfs-client';
 
 @Injectable()
 export class HeliaService {
-  private heliaClient;
+  private ipfsClient;
 
   constructor() {
     this.connectToIpfs().then(() => {
@@ -12,8 +12,8 @@ export class HeliaService {
   }
 
   async connectToIpfs() {
-    if (!this.heliaClient) this.heliaClient = await createHeliaClient();
-    return this.heliaClient;
+    if (!this.ipfsClient) this.ipfsClient = await createIPFSClient();
+    return this.ipfsClient;
   }
 
   async uploadFile(finalFile) {
@@ -21,11 +21,11 @@ export class HeliaService {
       await this.connectToIpfs();
       const encoder = new TextEncoder();
 
-      const { cid } = await this.heliaClient.add(
+      const { path } = await this.ipfsClient.add(
         encoder.encode(JSON.stringify(finalFile)),
       );
 
-      return cid;
+      return path;
     } catch (error) {
       return error;
     }
@@ -36,7 +36,7 @@ export class HeliaService {
       await this.connectToIpfs();
       const decoder = new TextDecoder();
       let text = '';
-      for await (const chunk of this.heliaClient.cat(cid)) {
+      for await (const chunk of this.ipfsClient.cat(cid)) {
         text += decoder.decode(chunk, {
           stream: true,
         });
@@ -50,9 +50,11 @@ export class HeliaService {
 
   async deleteFile(id: string) {
     try {
-      const file = await this.heliaClient.pin.rm(id);
-      console.log(file);
-      return file;
+      const { cid } = await this.ipfsClient.pin.rm(id);
+      for await (const res of this.ipfsClient.repo.gc()) {
+        console.log(res);
+      }
+      return cid;
     } catch (error) {
       console.log(error);
     }
