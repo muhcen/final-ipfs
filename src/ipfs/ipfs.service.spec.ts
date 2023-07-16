@@ -40,6 +40,7 @@ describe('IpfsService', () => {
     userId: '123',
     description: 'somthing',
     metadata: 'xyz',
+    file: undefined,
   };
 
   const mockIpfsRepository = {

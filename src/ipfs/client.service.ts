@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { createIPFSClient } from './ipfs/ipfs-client';
 
 @Injectable()
@@ -27,7 +27,8 @@ export class ClientService {
 
       return path;
     } catch (error) {
-      return error;
+      console.log(error.message);
+      throw new BadRequestException(error.message);
     }
   }
 
@@ -44,7 +45,8 @@ export class ClientService {
 
       return text;
     } catch (error) {
-      return error;
+      console.log(error.message);
+      throw new BadRequestException(error.message);
     }
   }
 
@@ -56,7 +58,8 @@ export class ClientService {
         console.log(res);
       }
     } catch (error) {
-      console.log(error);
+      console.log(error.message);
+      throw new BadRequestException(error.message);
     }
   }
 }

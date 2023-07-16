@@ -4,11 +4,12 @@ import {
   AfterInsert,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  ObjectIdColumn,
 } from 'typeorm';
 
-@Entity({ name: 'ipfs' })
+@Entity()
 export class Ipfs {
-  @PrimaryGeneratedColumn()
+  @ObjectIdColumn()
   id: number;
 
   @Column()
@@ -26,13 +27,13 @@ export class Ipfs {
   @Column()
   size: string;
 
-  @Column({ nullable: true })
+  @Column()
   description: string;
 
-  @Column({ nullable: true })
+  @Column()
   metadata: string;
 
-  @Column({ nullable: true })
+  @Column()
   userId: string;
 
   @CreateDateColumn()

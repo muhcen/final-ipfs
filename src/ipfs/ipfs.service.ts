@@ -49,7 +49,8 @@ export class IpfsService {
       file.buffer.data = Buffer.from(file.buffer.data);
       return file;
     } catch (err) {
-      throw new BadRequestException(err.message);
+      console.log(err.message);
+      throw new HttpException(err.message, err.status);
     }
   }
 
@@ -57,6 +58,7 @@ export class IpfsService {
     try {
       return this.ipfsRepo.findOne({ where: { cid } });
     } catch (error) {
+      console.log(error.message);
       throw new BadRequestException(error.message);
     }
   }

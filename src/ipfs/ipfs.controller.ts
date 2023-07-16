@@ -17,12 +17,14 @@ import { Ipfs } from './entities/ipfs.entity';
 import { CreateIpfDto } from './dto/create-ipfs.dto';
 import { IpfsService } from './ipfs.service';
 import { IResponse } from './interface/response.interface';
+import { ApiConsumes, ApiParam } from '@nestjs/swagger';
 
 @Controller('ipfs')
 export class IpfsController {
   constructor(private readonly ipfsService: IpfsService) {}
 
   @Post('upload')
+  @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
     @UploadedFile(new ParseFilePipe())

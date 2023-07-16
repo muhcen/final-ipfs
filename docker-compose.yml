@@ -12,31 +12,26 @@ services:
       - ./ipfs/staging/:/export
       - ./ipfs/data/:/data/ipfs
 
-  postgres:
-    image: postgres
-    environment:
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_USER=user
-      - POSTGRES_DB=ipfs
-
-    ports:
-      - '5432:5432'
+  mongo:
+    image: mongo
+    container_name: mongo
+    env_file:
+      - .env
     volumes:
-      - ./db/data:/var/lib/postgresql/data
+      - /db/data:/data/db
+    ports:
+      - '27017:27017'
     restart: always
 
-  pgadmin:
-    image: dpage/pgadmin4
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
-      - PGADMIN_DEFAULT_PASSWORD=root
-    ports:
-      - '5050:80'
+  mongo-express:
+    image: mongo-express
+    restart: always
     depends_on:
-      - postgres
-    volumes:
-      - ./db/data:/var/lib/postgresql/data
-    restart: always
+      - mongo
+    ports:
+      - 8081:8081
+    env_file:
+      - .env
 
   app:
     build:
@@ -44,7 +39,8 @@ services:
       target: development
     command: npm run start:dev
     depends_on:
-      - postgres
+      - mongo
+      - ipfs_host
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules

@@ -4,7 +4,7 @@ services:
     build:
       context: .
       target: development
-    command: npm run test:watch
+    command: npm run test:cov
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules

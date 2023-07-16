@@ -6,8 +6,8 @@ import { Ipfs } from '../src/ipfs/entities/ipfs.entity';
 config();
 
 export const dataSourceOptions: DataSourceOptions = {
-  type: 'postgres',
-  url: process.env.POSTGRES_URI,
+  type: 'mongodb',
+  url: process.env.ME_CONFIG_MONGODB_URL,
   entities: ['dist/**/**/*.entity.js'],
   migrations: ['dist/db/migrations/*.js'],
 };
